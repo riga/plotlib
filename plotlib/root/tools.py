@@ -13,13 +13,14 @@ __all__ = [
 
 
 import ROOT
+import six
 
 from plotlib.util import merge_dicts
 from plotlib.root.styles import styles
 
 
 def apply_properties(obj, props, *_props):
-    for name, value in merge_dicts(props, *_props).items():
+    for name, value in six.iteritems(merge_dicts(props, *_props)):
         # determine the setter to invoke
         setter = getattr(obj, "Set{}".format(name), getattr(obj, name, None))
         if not callable(setter):
@@ -74,7 +75,7 @@ def setup_pad(pad, props=None):
     apply_properties(pad, styles.pad, props)
 
 
-def setup_x_axis(x_axis, pad, props=None):
+def setup_x_axis(axis, pad, props=None):
     canvas_height = pad.GetCanvas().GetWindowHeight()
 
     _props = styles.axis.copy()
@@ -88,10 +89,10 @@ def setup_x_axis(x_axis, pad, props=None):
 
     _props["TitleOffset"] = 1.075 * styles.canvas_height / canvas_height
 
-    apply_properties(x_axis, _props, props)
+    apply_properties(axis, _props, props)
 
 
-def setup_y_axis(y_axis, pad, props=None):
+def setup_y_axis(axis, pad, props=None):
     canvas_width = pad.GetCanvas().GetWindowWidth()
 
     _props = styles.axis.copy()
@@ -103,17 +104,17 @@ def setup_y_axis(y_axis, pad, props=None):
     if pad_height != 0:
         _props["TickLength"] = styles.auto_ticklength / pad_height
 
-    apply_properties(y_axis, _props, props)
+    apply_properties(axis, _props, props)
 
 
-def setup_z_axis(z_axis, pad, props=None):
+def setup_z_axis(axis, pad, props=None):
     canvas_width = pad.GetCanvas().GetWindowWidth()
 
     _props = styles.axis.copy()
 
     _props["TitleOffset"] = 1.4 * styles.canvas_width / canvas_width
 
-    apply_properties(z_axis, _props, props)
+    apply_properties(axis, _props, props)
 
 
 def setup_latex(latex, props=None):
