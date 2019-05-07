@@ -1,0 +1,10 @@
+stages:
+  - lint
+
+lint:
+  stage: lint
+  tags:
+    - docker
+  image: gitlab-registry.cern.ch/mrieger/plotlib
+  script:
+    - flake8 plotlib
