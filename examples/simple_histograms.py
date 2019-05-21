@@ -59,7 +59,7 @@ my_style.hist.FillStyle = 3444
 
 # setup the second histogram again, but this time use the new style
 with r.styles.use("my_style"):
-    r.setup_hist(h2, props={"LineColor": 4, "FillColor": 4})
+    r.setup_hist(h2, color=4)  # sets line, marker and fill color by default, see tools.set_color
 
 # update and save again
 r.update_canvas(canvas)

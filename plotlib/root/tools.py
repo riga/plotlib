@@ -9,7 +9,7 @@ __all__ = [
     "apply_properties", "calculate_legend_coords", "get_canvas_pads", "update_canvas",
     "setup_style", "setup_canvas", "setup_pad", "setup_x_axis", "setup_y_axis", "setup_z_axis",
     "setup_axes", "setup_latex", "setup_legend", "setup_hist", "setup_graph", "setup_line",
-    "setup_box", "setup_func",
+    "setup_func", "setup_box",
 ]
 
 
@@ -76,7 +76,7 @@ def setup_pad(pad, props=None):
     apply_properties(pad, styles.pad, props)
 
 
-def setup_x_axis(axis, pad, props=None):
+def setup_x_axis(axis, pad, props=None, color=None):
     canvas_height = pad.GetCanvas().GetWindowHeight()
 
     _props = styles.axis.copy()
@@ -92,8 +92,11 @@ def setup_x_axis(axis, pad, props=None):
 
     apply_properties(axis, _props, props)
 
+    if color is not None:
+        set_color(axis, color)
 
-def setup_y_axis(axis, pad, props=None):
+
+def setup_y_axis(axis, pad, props=None, color=None):
     canvas_width = pad.GetCanvas().GetWindowWidth()
 
     _props = styles.axis.copy()
@@ -107,8 +110,11 @@ def setup_y_axis(axis, pad, props=None):
 
     apply_properties(axis, _props, props)
 
+    if color is not None:
+        set_color(axis, color)
 
-def setup_z_axis(axis, pad, props=None):
+
+def setup_z_axis(axis, pad, props=None, color=None):
     canvas_width = pad.GetCanvas().GetWindowWidth()
 
     _props = styles.axis.copy()
@@ -117,41 +123,85 @@ def setup_z_axis(axis, pad, props=None):
 
     apply_properties(axis, _props, props)
 
+    if color is not None:
+        set_color(axis, color)
 
-def setup_axes(obj, pad):
+
+def setup_axes(obj, pad, **kwargs):
     for s, f in [("X", setup_x_axis), ("Y", setup_y_axis), ("Z", setup_z_axis)]:
         axis_getter = getattr(obj, "Get{}axis".format(s), None)
         if callable(axis_getter):
             # get the axis and set it up
-            f(axis_getter(), pad)
+            f(axis_getter(), pad, **kwargs)
         else:
             # we can stop here
             break
 
 
-def setup_latex(latex, props=None):
+def setup_latex(latex, props=None, color=None):
     apply_properties(latex, styles.latex, props)
 
+    if color is not None:
+        set_color(latex, color)
 
-def setup_legend(legend, props=None):
+
+def setup_legend(legend, props=None, color=None):
     apply_properties(legend, styles.legend, props)
 
+    if color is not None:
+        set_color(legend, color)
 
-def setup_hist(hist, props=None):
+
+def setup_hist(hist, props=None, color=None):
     apply_properties(hist, styles.hist, props)
 
+    if color is not None:
+        set_color(hist, color)
 
-def setup_graph(graph, props=None):
+
+def setup_graph(graph, props=None, color=None):
     apply_properties(graph, styles.graph, props)
 
+    if color is not None:
+        set_color(graph, color)
 
-def setup_line(line, props=None):
+
+def setup_line(line, props=None, color=None):
     apply_properties(line, styles.line, props)
+
+    if color is not None:
+        set_color(line, color)
+
+
+def setup_func(func, props=None, color=None):
+    apply_properties(func, styles.func, props)
+
+    if color is not None:
+        set_color(func, color)
 
 
 def setup_box(box, props=None):
     apply_properties(box, styles.box, props)
 
 
-def setup_func(func, props=None):
-    apply_properties(func, styles.func, props)
+def set_color(obj, color, flags="LMFT"):
+    funcs = {
+        "L": ("SetLineColor",),
+        "M": ("SetMarkerColor",),
+        "F": ("SetFillColor",),
+        "T": ("SetTextColor", "SetLabelColor"),
+    }
+
+    for flag in flags:
+        if flag not in funcs:
+            raise ValueError("flag '{}' is unknown".format(flag))
+
+        for attr in funcs[flag]:
+            func = getattr(obj, attr, None)
+            if not callable(func):
+                continue
+
+            if isinstance(color, (tuple, list)):
+                func(*color)
+            else:
+                func(color)
