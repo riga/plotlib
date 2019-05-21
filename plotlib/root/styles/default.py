@@ -22,7 +22,7 @@ style = styles.set(Styles.DEFAULT_STYLE_NAME, DotDict(
     legend_x1=0.68,
     legend_x2=0.96,
     legend_y2=0.92,
-    legend_y_spread=0.045,
+    legend_dy=0.045,
 ))
 
 # colors

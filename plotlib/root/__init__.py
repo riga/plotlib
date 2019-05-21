@@ -16,7 +16,7 @@ import ROOT
 
 # configure the global ROOT behavior
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-if os.getenv("PLOTLIB_ROOT_BATCH", "").lower() in ("1", "yes", "true"):
+if os.getenv("PLOTLIB_ROOT_BATCH", "1").lower() in ("1", "yes", "true"):
     ROOT.gROOT.SetBatch()
 
 

@@ -46,7 +46,8 @@ class Styles(object):
     """
     Class to handle different collections of styles, which are represented and stored internally as
     dictionaries. The main purpose is to store various styles mapped to different names, which can
-    be changed and nested via contexts. Example:
+    be changed my manipulating the internal stack of currently used styles. They can be changed via
+    :py:meth:`push` and :py:meth:`pop`, or within contexts using :py:meth:`use`. Example:
 
     .. code-block:: python
 
@@ -78,7 +79,12 @@ class Styles(object):
         with styles.use("publication"):
             r.setup_canvas(canvas, styles.canvas)
 
-        # plot
+        # or manually via push & pop
+        styles.push("publication")
+        r.setup_canvas(canvas, styles.canvas)
+        styles.pop("publication")
+
+        # continue plotting
         ...
 
     .. py:attribute:: DEFAULT_STYLE_NAME
@@ -106,14 +112,28 @@ class Styles(object):
     def __init__(self):
         super(Styles, self).__init__()
 
-        self._stack = []
         self._styles = {}
+        self._stack = []
 
         # register a DotDict for the default style
         self.set(self.__class__.DEFAULT_STYLE_NAME, DotDict())
 
     def __getattr__(self, attr):
+        """
+        Returns the attribute *attr* of the :py:attr:`current_style`.
+        """
         return getattr(self.current_style, attr)
+
+    @property
+    def current_style_name(self):
+        if self._stack:
+            return self._stack[-1]
+        else:
+            return self.DEFAULT_STYLE_NAME
+
+    @property
+    def current_style(self):
+        return self.get(self.current_style_name)
 
     def get(self, style_name):
         """
@@ -133,31 +153,33 @@ class Styles(object):
 
         return style
 
+    def push(self, style_name):
+        """
+        Appends *style_name* to the stack of currently used styles.
+        """
+        if style_name not in self._styles:
+            raise ValueError("cannot use unknown style '{}'".format(style_name))
+
+        self._stack.append(style_name)
+
+    def pop(self):
+        """
+        Removes the last element from the stack of currently used styles and returns the removed
+        element.
+        """
+        return self._stack.pop()
+
     @contextlib.contextmanager
     def use(self, style_name):
         """
         Sets the currently used style to the one defined by *style_name*. Internally, the name is
         added to the stack of style names, so that :py:attr:``
         """
-        if style_name not in self._styles:
-            raise ValueError("cannot use unknown style '{}'".format(style_name))
-
-        self._stack.append(style_name)
+        self.push(style_name)
         try:
             yield self.get(style_name)
         finally:
-            self._stack.pop()
-
-    @property
-    def current_style_name(self):
-        if self._stack:
-            return self._stack[-1]
-        else:
-            return self.DEFAULT_STYLE_NAME
-
-    @property
-    def current_style(self):
-        return self.get(self.current_style_name)
+            self.pop()
 
 
 def merge_dicts(*dicts, **kwargs):

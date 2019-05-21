@@ -6,9 +6,10 @@ Functional ROOT tools.
 
 
 __all__ = [
-    "apply_properties", "calc_legend_pos", "get_canvas_pads", "update_canvas", "setup_style",
-    "setup_canvas", "setup_pad", "setup_x_axis", "setup_y_axis", "setup_z_axis", "setup_latex",
-    "setup_legend", "setup_hist", "setup_graph", "setup_line", "setup_box", "setup_func",
+    "apply_properties", "calculate_legend_coords", "get_canvas_pads", "update_canvas",
+    "setup_style", "setup_canvas", "setup_pad", "setup_x_axis", "setup_y_axis", "setup_z_axis",
+    "setup_axes", "setup_latex", "setup_legend", "setup_hist", "setup_graph", "setup_line",
+    "setup_box", "setup_func",
 ]
 
 
@@ -35,13 +36,13 @@ def apply_properties(obj, props, *_props):
             setter(*value)
 
 
-def calc_legend_pos(n_entries, x1=None, x2=None, y2=None, y_spread=None):
+def calculate_legend_coords(n_entries, x1=None, x2=None, y2=None, dy=None):
     x1 = x1 if x1 is not None else styles.legend_x1
     x2 = x2 if x2 is not None else styles.legend_x2
     y2 = y2 if y2 is not None else styles.legend_y2
-    y_spread = y_spread if y_spread is not None else styles.legend_y_spread
+    dy = dy if dy is not None else styles.legend_dy
 
-    y1 = y2 - y_spread * n_entries
+    y1 = y2 - dy * n_entries
 
     return (x1, y1, x2, y2)
 
@@ -115,6 +116,17 @@ def setup_z_axis(axis, pad, props=None):
     _props["TitleOffset"] = 1.4 * styles.canvas_width / canvas_width
 
     apply_properties(axis, _props, props)
+
+
+def setup_axes(obj, pad):
+    for s, f in [("X", setup_x_axis), ("Y", setup_y_axis), ("Z", setup_z_axis)]:
+        axis_getter = getattr(obj, "Get{}axis".format(s), None)
+        if callable(axis_getter):
+            # get the axis and set it up
+            f(axis_getter(), pad)
+        else:
+            # we can stop here
+            break
 
 
 def setup_latex(latex, props=None):
