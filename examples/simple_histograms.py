@@ -48,18 +48,21 @@ r.update_canvas(canvas)
 canvas.SaveAs("histograms.pdf")
 
 # now, we want to use a different style for the second histogram
-# this might seem overly complicated for this trivial example, but for complicated
-# plots, style switching is really beneficial
+# this might seem overly complicated for this trivial example, but
+# for sophisticated plots, style switching is really helpful
 
 # we start by copying the default style
+# (this would normally happen in a different, perhaps centralized file)
 my_style = r.styles.copy("default", "my_style")
 
-# update the histogram style
+# update the histogram fill style
 my_style.hist.FillStyle = 3444
 
 # setup the second histogram again, but this time use the new style
 with r.styles.use("my_style"):
-    r.setup_hist(h2, color=4)  # sets line, marker and fill color by default, see tools.set_color
+    # the color attribute sets line, marker and fill color by default
+    # see tools.set_color for more info
+    r.setup_hist(h2, color=4)
 
 # update and save again
 r.update_canvas(canvas)
