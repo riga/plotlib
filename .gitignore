@@ -5,6 +5,7 @@
 *.DS_Store
 *.pkl
 *.egg-info
+*.pdf
 
 .ipynb_checkpoints
 __pycache__
