@@ -8,6 +8,7 @@ Helpful utilities.
 __all__ = ["DotDict", "Styles", "merge_dicts"]
 
 
+import copy
 import contextlib
 
 
@@ -152,6 +153,14 @@ class Styles(object):
         self._styles[style_name] = style
 
         return style
+
+    def copy(self, src_style_name, dst_style_name):
+        """
+        Creates a deep copy of the style defined by *src_style_name*, stores it as *dst_style_name*
+        and returns the copied style dictionary.
+        """
+        style = copy.deepcopy(self.get(src_style_name))
+        return self.set(dst_style_name, style)
 
     def push(self, style_name):
         """

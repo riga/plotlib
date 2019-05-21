@@ -7,7 +7,6 @@ Creates simple histograms and a legend.
 
 import os
 import random
-import copy
 
 import plotlib.root as r
 import ROOT
@@ -53,7 +52,7 @@ canvas.SaveAs("histograms.pdf")
 # plots, style switching is really beneficial
 
 # we start by copying the default style
-my_style = r.styles.set("my_style", copy.deepcopy(r.styles.get("default")))
+my_style = r.styles.copy("default", "my_style")
 
 # update the histogram style
 my_style.hist.FillStyle = 3444
