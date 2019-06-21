@@ -152,11 +152,14 @@ def setup_legend(legend, props=None, color=None):
         set_color(legend, color)
 
 
-def setup_hist(hist, props=None, color=None):
+def setup_hist(hist, props=None, color=None, pad=None):
     apply_properties(hist, styles.hist, props)
 
     if color is not None:
         set_color(hist, color)
+
+    if pad is not None:
+        setup_axes(hist, pad)
 
 
 def setup_graph(graph, props=None, color=None):
