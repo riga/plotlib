@@ -9,7 +9,7 @@ __all__ = [
     "apply_properties", "calculate_legend_coords", "get_canvas_pads", "update_canvas",
     "setup_style", "setup_canvas", "setup_pad", "setup_x_axis", "setup_y_axis", "setup_z_axis",
     "setup_axes", "setup_latex", "setup_legend", "setup_hist", "setup_graph", "setup_line",
-    "setup_func", "setup_box",
+    "setup_func", "setup_box", "get_pad_coordinates",
 ]
 
 
@@ -187,12 +187,12 @@ def setup_box(box, props=None):
     apply_properties(box, styles.box, props)
 
 
-def set_color(obj, color, flags="LMFT"):
+def set_color(obj, color, flags="lmft"):
     funcs = {
-        "L": ("SetLineColor",),
-        "M": ("SetMarkerColor",),
-        "F": ("SetFillColor",),
-        "T": ("SetTextColor", "SetLabelColor"),
+        "l": ("SetLineColor",),
+        "m": ("SetMarkerColor",),
+        "f": ("SetFillColor",),
+        "t": ("SetTextColor", "SetLabelColor"),
     }
 
     for flag in flags:
@@ -208,3 +208,38 @@ def set_color(obj, color, flags="LMFT"):
                 func(*color)
             else:
                 func(color)
+
+
+def get_pad_coordinates(h, v, offset=0.005, h_offset=None, v_offset=None):
+    h_values = ("l", "c", "r")
+    v_values = ("t", "c", "b")
+
+    if h not in h_values:
+        raise ValueError("unknown horizontal position '{}', allowed values are {}".format(
+            h, h_values))
+
+    if v not in v_values:
+        raise ValueError("unknown vertical position '{}', allowed values are {}".format(
+            v, v_values))
+
+    if h_offset is None:
+        h_offset = offset
+
+    if v_offset is None:
+        v_offset = offset
+
+    if h == "l":
+        x = styles.pad.LeftMargin + h_offset
+    elif h == "c":
+        x = (1. - styles.pad.RightMargin + styles.pad.LeftMargin) / 2.
+    else:  # "r":
+        x = 1. - styles.pad.RightMargin - h_offset
+
+    if v == "t":
+        y = 1. - styles.pad.TopMargin + v_offset
+    elif v == "c":
+        y = (1. - styles.pad.TopMargin + styles.pad.BottomMargin) / 2.
+    else:  # "b"
+        y = styles.pad.BottomMargin - v_offset
+
+    return x, y
