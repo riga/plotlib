@@ -65,16 +65,16 @@ def create_top_right_label(text, props=None, x=None, y=None):
 
 def create_cms_labels(prefix="CMS", postfix="private work", x=None, y=None):
     # determine defaults based on the current style
-    x_default, y_default = get_pad_coordinates("l", "t")
+    x_default, y_default = get_pad_coordinates("l", "t", h_offset=0.005, v_offset=-0.005)
     if x is None:
         x = x_default
     if y is None:
         y = y_default
 
     label1 = ROOT.TLatex(x, y, prefix)
-    setup_latex(label1, {"TextFont": 73})
+    setup_latex(label1, {"TextFont": 63})
 
-    label2 = ROOT.TLatex(x, y, "#font[73]{{{}}} {}".format(prefix, postfix))
-    setup_latex(label2)
+    label2 = ROOT.TLatex(x, y, "#font[63]{{{}}} {}".format(prefix, postfix))
+    setup_latex(label2, {"TextFont": 53})
 
     return [label1, label2]
