@@ -236,10 +236,10 @@ def get_pad_coordinates(h, v, offset=0.005, h_offset=None, v_offset=None):
         x = 1. - styles.pad.RightMargin - h_offset
 
     if v == "t":
-        y = 1. - styles.pad.TopMargin + v_offset
+        y = 1. - styles.pad.TopMargin - v_offset
     elif v == "c":
         y = (1. - styles.pad.TopMargin + styles.pad.BottomMargin) / 2.
     else:  # "b"
-        y = styles.pad.BottomMargin - v_offset
+        y = styles.pad.BottomMargin + v_offset
 
     return x, y
