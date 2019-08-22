@@ -5,11 +5,12 @@ Helpful utilities.
 """
 
 
-__all__ = ["DotDict", "Styles", "merge_dicts"]
+__all__ = ["DotDict", "Styles", "merge_dicts", "create_random_name"]
 
 
 import copy
 import contextlib
+import uuid
 
 
 class DotDict(dict):
@@ -215,3 +216,14 @@ def merge_dicts(*dicts, **kwargs):
             merged_dict.update(d)
 
     return merged_dict
+
+
+def create_random_name(prefix="", l=8):
+    """
+    Creates and returns a random name string consisting of *l* characters using uuid4 internally.
+    When *prefix* is given, the name will have the format ``<prefix>_<random_name>``.
+    """
+    name = uuid.uuid4().hex[:l]
+    if prefix:
+        name = "{}_{}".format(prefix, name)
+    return name

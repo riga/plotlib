@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-Functional ROOT tools.
+Functional ROOT tools that retrieve and interact with existing ROOT objects, but do not create them.
 """
 
 
@@ -228,6 +228,8 @@ def get_pad_coordinates(h, v, offset=0.005, h_offset=None, v_offset=None):
     if v_offset is None:
         v_offset = offset
 
+    # determine x and y position
+    # the offset always points inwards, depending on the horizontal and vertical alignment
     if h == "l":
         x = styles.pad.LeftMargin + h_offset
     elif h == "c":
