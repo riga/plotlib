@@ -33,7 +33,7 @@ def create_object(cls_name, *args, **kwargs):
     return obj
 
 
-def create_canvas(name=None, title=None, width=None, height=None, divide=(1,)):
+def create_canvas(name=None, title=None, width=None, height=None, divide=(1,), pad_props=None):
     if not name:
         name = create_random_name("canvas")
 
@@ -47,7 +47,7 @@ def create_canvas(name=None, title=None, width=None, height=None, divide=(1,)):
 
     pads = get_canvas_pads(canvas)
     for pad in pads:
-        setup_pad(pad)
+        setup_pad(pad, pad_props)
 
     return canvas, pads
 
