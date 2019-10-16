@@ -131,3 +131,9 @@ style.func = DotDict(
     LineWidth=2,
     LineColor=1,
 )
+
+# TEllipse
+style.ellipse = DotDict(
+    LineWidth=1,
+    LineColor=1,
+)

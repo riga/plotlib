@@ -9,7 +9,7 @@ __all__ = [
     "apply_properties", "calculate_legend_coords", "get_canvas_pads", "update_canvas",
     "setup_style", "setup_canvas", "setup_pad", "setup_x_axis", "setup_y_axis", "setup_z_axis",
     "setup_axes", "setup_latex", "setup_legend", "setup_hist", "setup_graph", "setup_line",
-    "setup_func", "setup_box", "get_pad_coordinates",
+    "setup_func", "setup_box", "setup_ellipse", "get_pad_coordinates",
 ]
 
 
@@ -76,7 +76,7 @@ def setup_pad(pad, props=None):
     apply_properties(pad, styles.pad, props)
 
 
-def setup_x_axis(axis, pad, props=None, color=None):
+def setup_x_axis(axis, pad, props=None, color=None, color_flags="l"):
     canvas_height = pad.GetCanvas().GetWindowHeight()
 
     _props = styles.axis.copy()
@@ -93,10 +93,10 @@ def setup_x_axis(axis, pad, props=None, color=None):
     apply_properties(axis, _props, props)
 
     if color is not None:
-        set_color(axis, color)
+        set_color(axis, color, flags=color_flags)
 
 
-def setup_y_axis(axis, pad, props=None, color=None):
+def setup_y_axis(axis, pad, props=None, color=None, color_flags="l"):
     canvas_width = pad.GetCanvas().GetWindowWidth()
 
     _props = styles.axis.copy()
@@ -111,10 +111,10 @@ def setup_y_axis(axis, pad, props=None, color=None):
     apply_properties(axis, _props, props)
 
     if color is not None:
-        set_color(axis, color)
+        set_color(axis, color, flags=color_flags)
 
 
-def setup_z_axis(axis, pad, props=None, color=None):
+def setup_z_axis(axis, pad, props=None, color=None, color_flags="l"):
     canvas_width = pad.GetCanvas().GetWindowWidth()
 
     _props = styles.axis.copy()
@@ -124,7 +124,7 @@ def setup_z_axis(axis, pad, props=None, color=None):
     apply_properties(axis, _props, props)
 
     if color is not None:
-        set_color(axis, color)
+        set_color(axis, color, flags=color_flags)
 
 
 def setup_axes(obj, pad, **kwargs):
@@ -138,53 +138,60 @@ def setup_axes(obj, pad, **kwargs):
             break
 
 
-def setup_latex(latex, props=None, color=None):
+def setup_latex(latex, props=None, color=None, color_flags="t"):
     apply_properties(latex, styles.latex, props)
 
     if color is not None:
-        set_color(latex, color)
+        set_color(latex, color, flags=color_flags)
 
 
-def setup_legend(legend, props=None, color=None):
+def setup_legend(legend, props=None, color=None, color_flags="lf"):
     apply_properties(legend, styles.legend, props)
 
     if color is not None:
-        set_color(legend, color)
+        set_color(legend, color, flags=color_flags)
 
 
-def setup_hist(hist, props=None, color=None, pad=None):
+def setup_hist(hist, props=None, pad=None, color=None, color_flags="lmf"):
     apply_properties(hist, styles.hist, props)
-
-    if color is not None:
-        set_color(hist, color)
 
     if pad is not None:
         setup_axes(hist, pad)
 
+    if color is not None:
+        set_color(hist, color, flags=color_flags)
 
-def setup_graph(graph, props=None, color=None):
+
+def setup_graph(graph, props=None, color=None, color_flags="lm"):
     apply_properties(graph, styles.graph, props)
 
     if color is not None:
-        set_color(graph, color)
+        set_color(graph, color, flags=color_flags)
 
 
-def setup_line(line, props=None, color=None):
+def setup_line(line, props=None, color=None, color_flags="lm"):
     apply_properties(line, styles.line, props)
 
     if color is not None:
-        set_color(line, color)
+        set_color(line, color, flags=color_flags)
 
 
-def setup_func(func, props=None, color=None):
+def setup_func(func, props=None, color=None, color_flags="l"):
     apply_properties(func, styles.func, props)
 
     if color is not None:
-        set_color(func, color)
+        set_color(func, color, flags=color_flags)
 
 
-def setup_box(box, props=None):
+def setup_box(box, props=None, color=None, color_flags="lf"):
     apply_properties(box, styles.box, props)
+
+    if color is not None:
+        set_color(box, color, flags=color_flags)
+
+
+def setup_ellipse(ellipse, props=None):
+    apply_properties(ellipse, styles.ellipse, props)
 
 
 def set_color(obj, color, flags="lmft"):
@@ -194,6 +201,10 @@ def set_color(obj, color, flags="lmft"):
         "f": ("SetFillColor",),
         "t": ("SetTextColor", "SetLabelColor"),
     }
+
+    # color can be a string, translate it to a ROOT.k<Color>
+    if isinstance(color, six.string_types):
+        color = getattr(ROOT, "k" + color.capitalize())
 
     for flag in flags:
         if flag not in funcs:
@@ -210,7 +221,7 @@ def set_color(obj, color, flags="lmft"):
                 func(color)
 
 
-def get_pad_coordinates(h, v, offset=0.005, h_offset=None, v_offset=None):
+def get_pad_coordinates(h, v, offset=None, h_offset=None, v_offset=None):
     h_values = ("l", "c", "r")
     v_values = ("t", "c", "b")
 
@@ -224,23 +235,27 @@ def get_pad_coordinates(h, v, offset=0.005, h_offset=None, v_offset=None):
 
     if h_offset is None:
         h_offset = offset
+    if h_offset is None:
+        h_offset = 0. if h == "c" else 0.005
 
     if v_offset is None:
         v_offset = offset
+    if v_offset is None:
+        v_offset = 0. if v == "c" else 0.005
 
     # determine x and y position
     # the offset always points inwards, depending on the horizontal and vertical alignment
     if h == "l":
         x = styles.pad.LeftMargin + h_offset
     elif h == "c":
-        x = (1. - styles.pad.RightMargin + styles.pad.LeftMargin) / 2.
+        x = (1. - styles.pad.RightMargin + styles.pad.LeftMargin) / 2. + h_offset
     else:  # "r":
         x = 1. - styles.pad.RightMargin - h_offset
 
     if v == "t":
         y = 1. - styles.pad.TopMargin - v_offset
     elif v == "c":
-        y = (1. - styles.pad.TopMargin + styles.pad.BottomMargin) / 2.
+        y = (1. - styles.pad.TopMargin + styles.pad.BottomMargin) / 2. + v_offset
     else:  # "b"
         y = styles.pad.BottomMargin + v_offset
 

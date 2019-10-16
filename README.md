@@ -4,7 +4,7 @@
 
 Collection of plotting helpers for ROOT and matplotlib.
 
-Original repository at [CERN GitLab](https://gitlab.cern.ch/mrieger/plotlib).
+Original repository at [GitHub](https://github.com/riga/plotlib).
 
 
 ### Examples

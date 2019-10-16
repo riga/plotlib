@@ -52,9 +52,9 @@ def create_canvas(name=None, title=None, width=None, height=None, divide=(1,), p
     return canvas, pads
 
 
-def create_top_left_label(text, props=None, x=None, y=None):
+def create_top_left_label(text, props=None, x=None, y=None, **kwargs):
     # determine defaults based on the current style
-    x_default, y_default = get_pad_coordinates("l", "t")
+    x_default, y_default = get_pad_coordinates("l", "t", **kwargs)
     if x is None:
         x = x_default
     if y is None:
@@ -66,9 +66,9 @@ def create_top_left_label(text, props=None, x=None, y=None):
     return label
 
 
-def create_top_right_label(text, props=None, x=None, y=None):
+def create_top_right_label(text, props=None, x=None, y=None, **kwargs):
     # determine defaults based on the current style
-    x_default, y_default = get_pad_coordinates("r", "t")
+    x_default, y_default = get_pad_coordinates("r", "t", **kwargs)
     if x is None:
         x = x_default
     if y is None:
@@ -84,7 +84,7 @@ def create_top_right_label(text, props=None, x=None, y=None):
 
 def create_cms_labels(prefix="CMS", postfix="private work", x=None, y=None):
     # determine defaults based on the current style
-    x_default, y_default = get_pad_coordinates("l", "t", h_offset=0.005, v_offset=-0.005)
+    x_default, y_default = get_pad_coordinates("l", "t", v_offset=-0.005)
     if x is None:
         x = x_default
     if y is None:
