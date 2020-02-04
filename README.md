@@ -1,6 +1,6 @@
 # plotlib
 
-[![pipeline status](https://gitlab.cern.ch/mrieger/plotlib/badges/master/pipeline.svg)](https://gitlab.cern.ch/mrieger/plotlib/commits/master)
+[![pipeline status](https://gitlab.cern.ch/mrieger/plotlib/badges/master/pipeline.svg)](https://gitlab.cern.ch/mrieger/plotlib/pipelines)
 
 Collection of plotting helpers for ROOT and matplotlib.
 
