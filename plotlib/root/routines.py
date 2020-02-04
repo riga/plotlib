@@ -58,7 +58,7 @@ def create_top_left_label(text, props=None, x=None, y=None, **kwargs):
     if x is None:
         x = x_default
     if y is None:
-        y = y_default
+        y = y_default + 0.01
 
     label = create_object("TLatex", x, y, text)
     setup_latex(label, props)
@@ -72,7 +72,7 @@ def create_top_right_label(text, props=None, x=None, y=None, **kwargs):
     if x is None:
         x = x_default
     if y is None:
-        y = y_default
+        y = y_default + 0.01
 
     props = merge_dicts({"TextAlign": 31}, props)
 
