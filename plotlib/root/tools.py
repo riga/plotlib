@@ -10,6 +10,7 @@ __all__ = [
     "setup_style", "setup_canvas", "setup_pad", "setup_x_axis", "setup_y_axis", "setup_z_axis",
     "setup_axes", "setup_latex", "setup_legend", "setup_hist", "setup_graph", "setup_line",
     "setup_func", "setup_box", "setup_ellipse", "get_pad_coordinates", "fill_legend",
+    "set_hist_value", "add_hist_value", "show_hist_underflow", "show_hist_overflow",
 ]
 
 
@@ -309,3 +310,60 @@ def fill_legend(legend, entries):
             else:
                 entry = (entries[n - 1][0], empty_label, "")
             legend.AddEntry(*entry)
+
+
+def set_hist_value(hist, i, value, err=None, err2=None):
+    hist.SetBinContent(i, value)
+
+    if hist.GetSumw2N() != 0:
+        if err2 is None and err is not None:
+            err2 = err**2.
+        if err2 is not None:
+            hist.GetSumw2()[i] = err2
+
+
+def add_hist_value(hist, i, value, err=None, err2=None):
+    if err2 is None and err is not None:
+        err2 = err**2.
+    update_err = hist.GetSumw2N() != 0 and err2 is not None
+
+    if update_err:
+        w2 = hist.GetSumw2()[i]
+
+    hist.AddBinContent(i, value)
+
+    if update_err:
+        hist.GetSumw2()[i] = w2 + err2
+
+
+def show_hist_underflow(hist, clear=True):
+    """
+    Adds the total underflow of a histogram *hist* to the first bin and propagates errors properly.
+    When *clear* is *True*, the underflow is set to 0.
+    """
+    underflow = hist.GetBinContent(0)
+    if underflow == 0:
+        return
+
+    err2 = None if hist.GetSumw2N() == 0 else hist.GetSumw2()[0]
+    add_hist_value(hist, 1, underflow, err2=err2)
+
+    if clear:
+        set_hist_value(hist, 0, 0., err2=0.)
+
+
+def show_hist_overflow(hist, clear=True):
+    """
+    Adds the total overflow of a histogram *hist* to the last bin and propagates errors properly.
+    When *clear* is *True*, the overflow is set to 0.
+    """
+    n_bins = hist.GetNbinsX()
+    overflow = hist.GetBinContent(n_bins + 1)
+    if overflow == 0:
+        return
+
+    err2 = None if hist.GetSumw2N() == 0 else hist.GetSumw2()[n_bins + 1]
+    add_hist_value(hist, n_bins, overflow, err2=err2)
+
+    if clear:
+        set_hist_value(hist, n_bins + 1, 0., err2=0.)
