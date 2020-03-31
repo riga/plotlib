@@ -9,9 +9,11 @@ __all__ = [
     "apply_properties", "calculate_legend_coords", "get_canvas_pads", "update_canvas",
     "setup_style", "setup_canvas", "setup_pad", "setup_x_axis", "setup_y_axis", "setup_z_axis",
     "setup_axes", "setup_latex", "setup_legend", "setup_hist", "setup_graph", "setup_line",
-    "setup_func", "setup_box", "setup_ellipse", "get_pad_coordinates",
+    "setup_func", "setup_box", "setup_ellipse", "get_pad_coordinates", "fill_legend",
 ]
 
+
+import math
 
 import ROOT
 import six
@@ -260,3 +262,50 @@ def get_pad_coordinates(h, v, offset=None, h_offset=None, v_offset=None):
         y = styles.pad.BottomMargin + v_offset
 
     return x, y
+
+
+def fill_legend(legend, entries):
+    """
+    Fills *entries* into a TLegend *legend* with multiple columns in an intuitive fashion. ROOT's
+    own implementation fills rows first while this implementation fills columns first. *entries*
+    must be a list of objects that can be added as a legend entry or tuples ``(object, label)``.
+    """
+    n = len(entries)
+    n_cols = legend.GetNColumns()
+    n_rows = int(math.ceil(float(n) / n_cols))
+
+    def get_text_width(text):
+        tlatex = ROOT.TLatex(0, 0, text)
+        tlatex.SetNDC()
+        tlatex.SetTextFont(legend.GetTextFont() or ROOT.gStyle.GetTextFont())
+        tlatex.SetTextSize(legend.GetTextSize() or ROOT.gStyle.GetTextSize())
+        width = tlatex.GetXsize()
+        del tlatex
+        return width
+
+    # prepare entries, store label widths
+    widths = []
+    for i, entry in enumerate(list(entries)):
+        entry = list(entry) if isinstance(entry, (tuple, list)) else [entry]
+        if len(entry) == 1:
+            entry.append("")
+        entry[1] = entry[1] or entry[0].GetTitle() or entry[0].GetName()
+        entries[i] = entry
+        widths.append(get_text_width(entry[1]))
+
+    # fill labels with spaces to ensure every label has the same width
+    max_width = max(widths)
+    space_width = get_text_width(" ")
+    for entry, width in zip(entries, widths):
+        entry[1] += " " * int(math.floor((max_width - width) / float(space_width)))
+    empty_label = " " * int(math.floor(max_width / float(space_width)))
+
+    # loop in a "transposed" order
+    for i in range(n_rows):
+        for j in range(n_cols):
+            idx = i + n_rows * j
+            if idx < n:
+                entry = entries[idx]
+            else:
+                entry = (entries[n - 1][0], empty_label, "")
+            legend.AddEntry(*entry)

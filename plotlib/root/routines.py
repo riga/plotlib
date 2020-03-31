@@ -33,7 +33,8 @@ def create_object(cls_name, *args, **kwargs):
     return obj
 
 
-def create_canvas(name=None, title=None, width=None, height=None, divide=(1,), pad_props=None):
+def create_canvas(name=None, title=None, width=None, height=None, divide=(1,), props=None,
+        pad_props=None):
     if not name:
         name = create_random_name("canvas")
 
@@ -43,7 +44,7 @@ def create_canvas(name=None, title=None, width=None, height=None, divide=(1,), p
 
     canvas = create_object("TCanvas", name, title, width, height)
     canvas.Divide(*divide)
-    setup_canvas(canvas, width, height)
+    setup_canvas(canvas, width, height, props)
 
     pads = get_canvas_pads(canvas)
     for pad in pads:
