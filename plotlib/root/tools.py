@@ -286,13 +286,15 @@ def fill_legend(legend, entries):
 
     # prepare entries, store label widths
     widths = []
-    for i, entry in enumerate(list(entries)):
+    _entries = []
+    for entry in entries:
         entry = list(entry) if isinstance(entry, (tuple, list)) else [entry]
         if len(entry) == 1:
             entry.append("")
         entry[1] = entry[1] or entry[0].GetTitle() or entry[0].GetName()
-        entries[i] = entry
+        _entries.append(entry)
         widths.append(get_text_width(entry[1]))
+    entries = _entries
 
     # fill labels with spaces to ensure every label has the same width
     max_width = max(widths)
