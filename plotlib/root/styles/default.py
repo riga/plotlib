@@ -66,10 +66,27 @@ style.pad = DotDict(
     Ticks=(True, True),
 )
 
-# TAxis
-style.axis = DotDict(
+# TAxis, x
+style.x_axis = DotDict(
     TitleFont=43,
     TitleSize=25,
+    LabelFont=43,
+    LabelSize=style.text_size,
+)
+
+# TAxis, y
+style.y_axis = DotDict(
+    TitleFont=43,
+    TitleSize=25,
+    LabelFont=43,
+    LabelSize=style.text_size,
+)
+
+# TAxis, z
+style.z_axis = DotDict(
+    TitleFont=43,
+    TitleSize=25,
+    TitleOffset=0.7,
     LabelFont=43,
     LabelSize=style.text_size,
 )

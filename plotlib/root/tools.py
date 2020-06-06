@@ -9,8 +9,8 @@ __all__ = [
     "apply_properties", "calculate_legend_coords", "get_canvas_pads", "update_canvas",
     "setup_style", "setup_canvas", "setup_pad", "setup_x_axis", "setup_y_axis", "setup_z_axis",
     "setup_axes", "setup_latex", "setup_legend", "setup_hist", "setup_graph", "setup_line",
-    "setup_func", "setup_box", "setup_ellipse", "get_pad_coordinates", "fill_legend",
-    "set_hist_value", "add_hist_value", "show_hist_underflow", "show_hist_overflow",
+    "setup_func", "setup_box", "setup_ellipse", "get_pad_coordinates", "get_stable_distance",
+    "fill_legend", "set_hist_value", "add_hist_value", "show_hist_underflow", "show_hist_overflow",
 ]
 
 
@@ -82,7 +82,7 @@ def setup_pad(pad, props=None):
 def setup_x_axis(axis, pad, props=None, color=None, color_flags="l"):
     canvas_height = pad.GetCanvas().GetWindowHeight()
 
-    _props = styles.axis.copy()
+    _props = styles.x_axis.copy()
 
     # auto ticks
     pad_width = 1. - pad.GetLeftMargin() - pad.GetRightMargin()
@@ -102,7 +102,7 @@ def setup_x_axis(axis, pad, props=None, color=None, color_flags="l"):
 def setup_y_axis(axis, pad, props=None, color=None, color_flags="l"):
     canvas_width = pad.GetCanvas().GetWindowWidth()
 
-    _props = styles.axis.copy()
+    _props = styles.y_axis.copy()
 
     _props["TitleOffset"] = 1.4 * styles.canvas_width / canvas_width
 
@@ -120,7 +120,7 @@ def setup_y_axis(axis, pad, props=None, color=None, color_flags="l"):
 def setup_z_axis(axis, pad, props=None, color=None, color_flags="l"):
     canvas_width = pad.GetCanvas().GetWindowWidth()
 
-    _props = styles.axis.copy()
+    _props = styles.z_axis.copy()
 
     _props["TitleOffset"] = 1.4 * styles.canvas_width / canvas_width
 
@@ -263,6 +263,56 @@ def get_pad_coordinates(h, v, offset=None, h_offset=None, v_offset=None):
         y = styles.pad.BottomMargin + v_offset
 
     return x, y
+
+
+def get_stable_distance(mode, distance, current=None, reference=None):
+    if mode not in ("h", "v"):
+        raise ValueError("unknown mode '{}', must be 'h' or 'v'")
+
+    if current is None:
+        current = styles.current_style_name
+    if reference is None:
+        reference = styles.DEFAULT_STYLE_NAME
+
+    if mode == "h":
+        # get the current canvas height
+        if isinstance(current, six.string_types):
+            height = styles.get(current).canvas_height
+        elif isinstance(current, six.integer_types + (float,)):
+            height = current
+        else:
+            height = current.GetWindowHeight()
+
+        # get the reference canvas height
+        if isinstance(reference, six.string_types):
+            ref_height = styles.get(reference).canvas_height
+        elif isinstance(reference, six.integer_types + (float,)):
+            ref_height = reference
+        else:
+            ref_height = reference.GetWindowHeight()
+
+        f = float(height) / float(ref_height)
+
+    else:  # v
+        # get the current canvas width
+        if isinstance(current, six.string_types):
+            width = styles.get(current).canvas_width
+        elif isinstance(current, six.integer_types + (float,)):
+            width = current
+        else:
+            width = current.GetWindowWidth()
+
+        # get the reference canvas width
+        if isinstance(reference, six.string_types):
+            ref_width = styles.get(reference).canvas_width
+        elif isinstance(reference, six.integer_types + (float,)):
+            ref_width = reference
+        else:
+            ref_width = reference.GetWindowWidth()
+
+        f = float(width) / float(ref_width)
+
+    return distance * f
 
 
 def fill_legend(legend, entries):
