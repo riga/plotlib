@@ -121,7 +121,6 @@ style.hist = DotDict(
 
 # TGraph
 style.graph = DotDict(
-    Title="",
     LineColor=1,
     LineWidth=2,
     FillColor=0,
