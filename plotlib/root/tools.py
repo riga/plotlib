@@ -89,9 +89,10 @@ def setup_x_axis(axis, pad, props=None, color=None, color_flags="l"):
     real_height = pad.YtoPixel(pad.GetY1()) - pad.YtoPixel(pad.GetY2())
     real_width = pad.XtoPixel(pad.GetX2()) - pad.XtoPixel(pad.GetX1())
     if pad_width != 0 and real_height != 0:
-        _props["TickLength"] = styles.auto_ticklength / pad_width * real_width / real_height
+        tick_length = styles.auto_ticklength / pad_width * real_width / real_height
+        _props.setdefault("TickLength", tick_length)
 
-    _props["TitleOffset"] = 1.075 * styles.canvas_height / canvas_height
+    _props.setdefault("TitleOffset", 1.075 * styles.canvas_height / canvas_height)
 
     apply_properties(axis, _props, props)
 
@@ -104,12 +105,12 @@ def setup_y_axis(axis, pad, props=None, color=None, color_flags="l"):
 
     _props = styles.y_axis.copy()
 
-    _props["TitleOffset"] = 1.4 * styles.canvas_width / canvas_width
+    _props.setdefault("TitleOffset", 1.4 * styles.canvas_width / canvas_width)
 
     # auto ticks
     pad_height = 1. - pad.GetTopMargin() - pad.GetBottomMargin()
     if pad_height != 0:
-        _props["TickLength"] = styles.auto_ticklength / pad_height
+        _props.setdefault("TickLength", styles.auto_ticklength / pad_height)
 
     apply_properties(axis, _props, props)
 
@@ -122,7 +123,7 @@ def setup_z_axis(axis, pad, props=None, color=None, color_flags="l"):
 
     _props = styles.z_axis.copy()
 
-    _props["TitleOffset"] = 1.4 * styles.canvas_width / canvas_width
+    _props.setdefault("TitleOffset", 1.4 * styles.canvas_width / canvas_width)
 
     apply_properties(axis, _props, props)
 
