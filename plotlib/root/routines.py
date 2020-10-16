@@ -83,9 +83,10 @@ def create_top_right_label(text, props=None, x=None, y=None, **kwargs):
     return label
 
 
-def create_cms_labels(prefix="CMS", postfix="private work", x=None, y=None):
+def create_cms_labels(prefix="CMS", postfix="private work", x=None, y=None, **kwargs):
     # determine defaults based on the current style
-    x_default, y_default = get_pad_coordinates("l", "t", v_offset=-0.005)
+    kwargs.setdefault("v_offset", -0.005)
+    x_default, y_default = get_pad_coordinates("l", "t", **kwargs)
     if x is None:
         x = x_default
     if y is None:

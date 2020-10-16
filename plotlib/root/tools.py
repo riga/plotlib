@@ -15,6 +15,7 @@ __all__ = [
 
 
 import math
+import warnings
 
 import ROOT
 import six
@@ -39,7 +40,61 @@ def apply_properties(obj, props, *_props):
             setter(*value)
 
 
-def calculate_legend_coords(n_entries, x1=None, x2=None, y2=None, dy=None):
+def calculate_legend_coords(pad=None, x1=None, x2=None, x1_margin=None, x2_margin=None,
+        width=None, y1=None, y2=None, y1_margin=None, y2_margin=None, dy=None, n=1, height=None):
+    # try to forward to old signature
+    if isinstance(pad, int):
+        return calculate_legend_coords_old(pad, x1=x1, x2=x2, y2=y2, dy=dy)
+
+    # prepare pad margins
+    pad_left = pad.GetLeftMargin() if pad else styles.pad.LeftMargin
+    pad_top = pad.GetTopMargin() if pad else styles.pad.TopMargin
+    pad_right = pad.GetRightMargin() if pad else styles.pad.RightMargin
+    pad_bottom = pad.GetBottomMargin() if pad else styles.pad.BottomMargin
+
+    # horizontal positioning, prefer coordinates over margin over width
+    if x1 is None and x1_margin is not None:
+        x1 = pad_left + x1_margin
+    if x2 is None and x2_margin is not None:
+        x2 = 1. - (pad_right + x2_margin)
+    if x2 is None:
+        if width is not None and x1 is not None:
+            x2 = x1 + width
+        else:
+            x2 = 1 - (pad_right + styles.legend_x2_margin)
+    if x1 is None:
+        if width is not None:
+            x1 = x2 - width
+        else:
+            x1 = pad_left + styles.legend_x1_margin
+
+    # vertical positioning, prefer coordinates over margin over width over n * dy
+    if y2 is None and y2_margin is not None:
+        y2 = 1. - (pad_top + y2_margin)
+    if y1 is None and y1_margin is not None:
+        y1 = pad_bottom + y1_margin
+    if y2 is None:
+        if height is not None and y1 is not None:
+            y2 = y1 + height
+        elif dy is not None and y1 is not None:
+            y2 = y1 + n * dy
+        else:
+            y2 = 1. - (pad_top + styles.legend_y2_margin)
+    if y1 is None:
+        if height is not None and y2 is not None:
+            y1 = y2 - height
+        elif dy is not None and y2 is not None:
+            y1 = y2 - n * dy
+        else:
+            y1 = y2 - n * styles.legend_dy
+
+    return (x1, y1, x2, y2)
+
+
+def calculate_legend_coords_old(n_entries, x1=None, x2=None, y2=None, dy=None):
+    warnings.warn("the signature calculate_legend_coords_old(n_entries, **kwargs) is deprecated",
+        DeprecationWarning)
+
     x1 = x1 if x1 is not None else styles.legend_x1
     x2 = x2 if x2 is not None else styles.legend_x2
     y2 = y2 if y2 is not None else styles.legend_y2
@@ -225,7 +280,7 @@ def set_color(obj, color, flags="lmft"):
                 func(color)
 
 
-def get_pad_coordinates(h, v, offset=None, h_offset=None, v_offset=None):
+def get_pad_coordinates(h, v, pad=None, offset=None, h_offset=None, v_offset=None):
     h_values = ("l", "c", "r")
     v_values = ("t", "c", "b")
 
@@ -247,21 +302,25 @@ def get_pad_coordinates(h, v, offset=None, h_offset=None, v_offset=None):
     if v_offset is None:
         v_offset = 0. if v == "c" else 0.005
 
+    # helper to get pad properties
+    def pad_prop(prop):
+        return getattr(pad, "Get" + prop)() if pad else styles.pad[prop]
+
     # determine x and y position
     # the offset always points inwards, depending on the horizontal and vertical alignment
     if h == "l":
-        x = styles.pad.LeftMargin + h_offset
+        x = pad_prop("LeftMargin") + h_offset
     elif h == "c":
-        x = (1. - styles.pad.RightMargin + styles.pad.LeftMargin) / 2. + h_offset
+        x = (1. - pad_prop("RightMargin") + pad_prop("LeftMargin")) / 2. + h_offset
     else:  # "r":
-        x = 1. - styles.pad.RightMargin - h_offset
+        x = 1. - pad_prop("RightMargin") - h_offset
 
     if v == "t":
-        y = 1. - styles.pad.TopMargin - v_offset
+        y = 1. - pad_prop("TopMargin") - v_offset
     elif v == "c":
-        y = (1. - styles.pad.TopMargin + styles.pad.BottomMargin) / 2. + v_offset
+        y = (1. - pad_prop("TopMargin") + pad_prop("BottomMargin")) / 2. + v_offset
     else:  # "b"
-        y = styles.pad.BottomMargin + v_offset
+        y = pad_prop("BottomMargin") + v_offset
 
     return x, y
 

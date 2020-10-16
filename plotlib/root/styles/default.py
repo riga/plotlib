@@ -19,10 +19,15 @@ style = styles.set(Styles.DEFAULT_STYLE_NAME, DotDict(
     canvas_height=640,
     text_size=22,
     auto_ticklength=0.015,
+    legend_x1_margin=0.55,
+    legend_x2_margin=0.02,
+    legend_y2_margin=0.02,
+    legend_dy=0.045,
+    # legacy values used in deprecated calculate_legend_coords_old method, to be removed
     legend_x1=0.68,
     legend_x2=0.96,
     legend_y2=0.92,
-    legend_dy=0.045,
+
 ))
 
 # colors
