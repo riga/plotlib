@@ -134,10 +134,10 @@ def setup_pad(pad, props=None):
     apply_properties(pad, styles.pad, props)
 
 
-def setup_x_axis(axis, pad, props=None, color=None, color_flags="l"):
+def setup_x_axis(axis, pad, props=None, color=None, color_flags="l", x2=False):
     canvas_height = pad.GetCanvas().GetWindowHeight()
 
-    _props = styles.x_axis.copy()
+    _props = (styles.x2_axis if x2 else styles.x_axis).copy()
 
     # auto ticks
     pad_width = 1. - pad.GetLeftMargin() - pad.GetRightMargin()

@@ -79,6 +79,18 @@ style.x_axis = DotDict(
     LabelSize=style.text_size,
 )
 
+# TAxis, second x axis at the top when needed
+style.x2_axis = DotDict(
+    TitleFont=43,
+    TitleSize=25,
+    LabelFont=43,
+    LabelSize=style.text_size,
+    TickLength=0.,
+    LabelOffset=-0.025,
+    TitleOffset=-1.2,
+    DrawOption="S",
+)
+
 # TAxis, y
 style.y_axis = DotDict(
     TitleFont=43,

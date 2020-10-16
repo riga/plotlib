@@ -43,6 +43,9 @@ class DotDict(dict):
     def __setattr__(self, attr, value):
         self[attr] = value
 
+    def copy(self):
+        return self.__class__(super(DotDict, self).copy())
+
 
 class Styles(object):
     """
