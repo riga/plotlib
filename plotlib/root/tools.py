@@ -9,8 +9,9 @@ __all__ = [
     "apply_properties", "calculate_legend_coords", "get_canvas_pads", "update_canvas",
     "setup_style", "setup_canvas", "setup_pad", "setup_x_axis", "setup_y_axis", "setup_z_axis",
     "setup_axes", "setup_latex", "setup_legend", "setup_hist", "setup_graph", "setup_line",
-    "setup_func", "setup_box", "setup_ellipse", "get_pad_coordinates", "get_stable_distance",
-    "fill_legend", "set_hist_value", "add_hist_value", "show_hist_underflow", "show_hist_overflow",
+    "setup_func", "setup_box", "setup_ellipse", "pixel_to_coord", "get_pad_coordinates",
+    "get_stable_distance", "fill_legend", "set_hist_value", "add_hist_value", "show_hist_underflow",
+    "show_hist_overflow",
 ]
 
 
@@ -278,6 +279,17 @@ def set_color(obj, color, flags="lmft"):
                 func(*color)
             else:
                 func(color)
+
+
+def pixel_to_coord(pad, x=None, y=None):
+    if x is None and y is None:
+        return (0., 0.)
+    elif y is None:
+        return pad.PixeltoX(x)
+    elif x is None:
+        return pad.PixeltoY(-y)
+    else:
+        return pad.PixeltoX(x), pad.PixeltoY(-y)
 
 
 def get_pad_coordinates(h, v, pad=None, offset=None, h_offset=None, v_offset=None):
