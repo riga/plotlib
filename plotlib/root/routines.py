@@ -15,7 +15,7 @@ import ROOT
 
 from plotlib.root.styles import styles
 from plotlib.root.tools import (
-    get_canvas_pads, setup_canvas, setup_pad, setup_latex, setup_legend, get_x, get_y, get_xy,
+    get_canvas_pads, setup_canvas, setup_pad, setup_latex, setup_legend, get_xy,
     calculate_legend_coords,
 )
 from plotlib.util import merge_dicts, create_random_name
