@@ -6,8 +6,8 @@ Pre-configured ROOT plotting routines that create and return objects.
 
 
 __all__ = [
-    "create_object", "create_canvas", "create_top_left_label", "create_top_right_label",
-    "create_cms_labels",
+    "create_object", "create_canvas", "create_legend", "create_top_left_label",
+    "create_top_right_label", "create_cms_labels",
 ]
 
 
@@ -15,7 +15,8 @@ import ROOT
 
 from plotlib.root.styles import styles
 from plotlib.root.tools import (
-    get_canvas_pads, setup_canvas, setup_pad, setup_latex, get_pad_coordinates,
+    get_canvas_pads, setup_canvas, setup_pad, setup_latex, setup_legend, get_x, get_y, get_xy,
+    calculate_legend_coords,
 )
 from plotlib.util import merge_dicts, create_random_name
 
@@ -53,49 +54,70 @@ def create_canvas(name=None, title=None, width=None, height=None, divide=(1,), p
     return canvas, pads
 
 
-def create_top_left_label(text, props=None, x=None, y=None, **kwargs):
-    # determine defaults based on the current style
-    x_default, y_default = get_pad_coordinates("l", "t", **kwargs)
-    if x is None:
-        x = x_default
-    if y is None:
-        y = y_default + 0.01
+def create_legend(*args, **kwargs):
+    props = kwargs.pop("props", {})
 
-    label = create_object("TLatex", x, y, text)
-    setup_latex(label, props)
+    # pass all arguments to the position calculation and create the legend
+    legend = create_object("TLegend", *calculate_legend_coords(*args, **kwargs))
+    setup_legend(legend, props=props)
 
-    return label
+    return legend
 
 
-def create_top_right_label(text, props=None, x=None, y=None, **kwargs):
-    # determine defaults based on the current style
-    x_default, y_default = get_pad_coordinates("r", "t", **kwargs)
-    if x is None:
-        x = x_default
-    if y is None:
-        y = y_default + 0.01
-
-    props = merge_dicts({"TextAlign": 31}, props)
-
-    label = create_object("TLatex", x, y, text)
-    setup_latex(label, props)
-
-    return label
-
-
-def create_cms_labels(prefix="CMS", postfix="private work", x=None, y=None, **kwargs):
-    # determine defaults based on the current style
-    kwargs.setdefault("v_offset", -0.005)
-    x_default, y_default = get_pad_coordinates("l", "t", **kwargs)
+def create_top_left_label(text, x=None, y=None, pad=None, props=None, **kwargs):
+    # default position
+    kwargs.setdefault("x_anchor", "left")
+    kwargs.setdefault("y_anchor", "top")
+    x_default, y_default = get_xy(10, -10, pad, **kwargs)
     if x is None:
         x = x_default
     if y is None:
         y = y_default
 
-    label1 = create_object("TLatex", x, y, prefix)
-    setup_latex(label1, {"TextFont": 63})
+    # default props
+    props = merge_dicts({"TextAlign": 11}, props)
 
+    # create and setup the label
+    label = create_object("TLatex", x, y, text)
+    setup_latex(label, props)
+
+    return label
+
+
+def create_top_right_label(text, x=None, y=None, pad=None, props=None, **kwargs):
+    # default position
+    kwargs.setdefault("x_anchor", "right")
+    kwargs.setdefault("y_anchor", "top")
+    x_default, y_default = get_xy(-10, -10, pad, **kwargs)
+    if x is None:
+        x = x_default
+    if y is None:
+        y = y_default
+
+    # default props
+    props = merge_dicts({"TextAlign": 31}, props)
+
+    # create and setup the label
+    label = create_object("TLatex", x, y, text)
+    setup_latex(label, props)
+
+    return label
+
+
+def create_cms_labels(prefix="CMS", postfix="Preliminary", x=None, y=None, pad=None, **kwargs):
+    # default position
+    kwargs.setdefault("x_anchor", "left")
+    kwargs.setdefault("y_anchor", "top")
+    x_default, y_default = get_xy(10, -10, pad, **kwargs)
+    if x is None:
+        x = x_default
+    if y is None:
+        y = y_default
+
+    # create the labels
+    label1 = create_object("TLatex", x, y, prefix)
     label2 = create_object("TLatex", x, y, "#font[63]{{{}}} {}".format(prefix, postfix))
+    setup_latex(label1, {"TextFont": 63})
     setup_latex(label2, {"TextFont": 53})
 
     return [label1, label2]

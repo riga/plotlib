@@ -6,12 +6,12 @@ Functional ROOT tools that retrieve and interact with existing ROOT objects, but
 
 
 __all__ = [
-    "apply_properties", "calculate_legend_coords", "get_canvas_pads", "update_canvas",
-    "setup_style", "setup_canvas", "setup_pad", "setup_x_axis", "setup_y_axis", "setup_z_axis",
-    "setup_axes", "setup_latex", "setup_legend", "setup_hist", "setup_graph", "setup_line",
-    "setup_func", "setup_box", "setup_ellipse", "pixel_to_coord", "get_pad_coordinates",
-    "get_stable_distance", "fill_legend", "set_hist_value", "add_hist_value", "show_hist_underflow",
-    "show_hist_overflow",
+    "apply_properties", "get_canvas_pads", "update_canvas", "setup_style", "setup_canvas",
+    "setup_pad", "setup_x_axis", "setup_y_axis", "setup_z_axis", "setup_axes", "setup_latex",
+    "setup_legend", "setup_hist", "setup_graph", "setup_line", "setup_func", "setup_box",
+    "setup_ellipse", "pixel_to_coord", "get_x", "get_y", "get_stable_distance",
+    "calculate_legend_coords", "fill_legend", "set_hist_value", "add_hist_value",
+    "show_hist_underflow", "show_hist_overflow",
 ]
 
 
@@ -39,71 +39,6 @@ def apply_properties(obj, props, *_props):
         # case 2: tuple
         else:
             setter(*value)
-
-
-def calculate_legend_coords(pad=None, x1=None, x2=None, x1_margin=None, x2_margin=None,
-        width=None, y1=None, y2=None, y1_margin=None, y2_margin=None, dy=None, n=1, height=None):
-    # try to forward to old signature
-    if isinstance(pad, int):
-        return calculate_legend_coords_old(pad, x1=x1, x2=x2, y2=y2, dy=dy)
-
-    # prepare pad margins
-    pad_left = pad.GetLeftMargin() if pad else styles.pad.LeftMargin
-    pad_top = pad.GetTopMargin() if pad else styles.pad.TopMargin
-    pad_right = pad.GetRightMargin() if pad else styles.pad.RightMargin
-    pad_bottom = pad.GetBottomMargin() if pad else styles.pad.BottomMargin
-
-    # horizontal positioning, prefer coordinates over margin over width
-    if x1 is None and x1_margin is not None:
-        x1 = pad_left + x1_margin
-    if x2 is None and x2_margin is not None:
-        x2 = 1. - (pad_right + x2_margin)
-    if x2 is None:
-        if width is not None and x1 is not None:
-            x2 = x1 + width
-        else:
-            x2 = 1 - (pad_right + styles.legend_x2_margin)
-    if x1 is None:
-        if width is not None:
-            x1 = x2 - width
-        else:
-            x1 = pad_left + styles.legend_x1_margin
-
-    # vertical positioning, prefer coordinates over margin over width over n * dy
-    if y2 is None and y2_margin is not None:
-        y2 = 1. - (pad_top + y2_margin)
-    if y1 is None and y1_margin is not None:
-        y1 = pad_bottom + y1_margin
-    if y2 is None:
-        if height is not None and y1 is not None:
-            y2 = y1 + height
-        elif dy is not None and y1 is not None:
-            y2 = y1 + n * dy
-        else:
-            y2 = 1. - (pad_top + styles.legend_y2_margin)
-    if y1 is None:
-        if height is not None and y2 is not None:
-            y1 = y2 - height
-        elif dy is not None and y2 is not None:
-            y1 = y2 - n * dy
-        else:
-            y1 = y2 - n * styles.legend_dy
-
-    return (x1, y1, x2, y2)
-
-
-def calculate_legend_coords_old(n_entries, x1=None, x2=None, y2=None, dy=None):
-    warnings.warn("the signature calculate_legend_coords_old(n_entries, **kwargs) is deprecated",
-        DeprecationWarning)
-
-    x1 = x1 if x1 is not None else styles.legend_x1
-    x2 = x2 if x2 is not None else styles.legend_x2
-    y2 = y2 if y2 is not None else styles.legend_y2
-    dy = dy if dy is not None else styles.legend_dy
-
-    y1 = y2 - dy * n_entries
-
-    return (x1, y1, x2, y2)
 
 
 def get_canvas_pads(canvas):
@@ -256,10 +191,10 @@ def setup_ellipse(ellipse, props=None):
 
 def set_color(obj, color, flags="lmft"):
     funcs = {
-        "l": ("SetLineColor",),
-        "m": ("SetMarkerColor",),
-        "f": ("SetFillColor",),
-        "t": ("SetTextColor", "SetLabelColor"),
+        "l": ["SetLineColor"],
+        "m": ["SetMarkerColor"],
+        "f": ["SetFillColor"],
+        "t": ["SetTextColor", "SetLabelColor"],
     }
 
     # color can be a string, translate it to a ROOT.k<Color>
@@ -292,48 +227,119 @@ def pixel_to_coord(pad, x=None, y=None):
         return pad.PixeltoX(x), pad.PixeltoY(-y)
 
 
-def get_pad_coordinates(h, v, pad=None, offset=None, h_offset=None, v_offset=None):
-    h_values = ("l", "c", "r")
-    v_values = ("t", "c", "b")
+def get_x(x, canvas=None, anchor="left", offset=0, margins=True, pixel=False):
+    # check arguments
+    if anchor.lower() not in ["left", "l", "right", "r"]:
+        raise Exception("anchor must be 'left', 'l', 'right' or 'r'")
+    rtl = anchor.lower() in ["right", "r"]
 
-    if h not in h_values:
-        raise ValueError("unknown horizontal position '{}', allowed values are {}".format(
-            h, h_values))
+    # convert pixel to relative coordinate
+    if isinstance(x, six.integer_types):
+        if canvas:
+            x = pixel_to_coord(canvas, x=x)
+        else:
+            x /= float(styles.canvas_width)
 
-    if v not in v_values:
-        raise ValueError("unknown vertical position '{}', allowed values are {}".format(
-            v, v_values))
+    # add the offset
+    if offset:
+        if isinstance(offset, six.integer_types):
+            if canvas:
+                offset = pixel_to_coord(canvas, x=offset)
+            else:
+                offset /= float(styles.canvas_width)
+        x += offset
 
-    if h_offset is None:
-        h_offset = offset
-    if h_offset is None:
-        h_offset = 0. if h == "c" else 0.005
+    # flip when anchor is right
+    if rtl:
+        x = 1. - x
 
-    if v_offset is None:
-        v_offset = offset
-    if v_offset is None:
-        v_offset = 0. if v == "c" else 0.005
+    # include margins
+    if margins:
+        if canvas:
+            # recursively add parent canvas margins
+            m = 0.
+            obj = canvas
+            while True:
+                m += obj.GetRightMargin() if rtl else obj.GetLeftMargin()
+                parent = obj.GetCanvas()
+                if parent != obj:
+                    obj = parent
+                else:
+                    break
+            # add parent margins
+        else:
+            # consider pad margins
+            m = getattr(styles.pad, "RightMargin" if rtl else "LeftMargin", 0.)
+        x = (x - m) if rtl else (x + m)
 
-    # helper to get pad properties
-    def pad_prop(prop):
-        return getattr(pad, "Get" + prop)() if pad else styles.pad[prop]
+    # convert to pixels
+    if pixel:
+        if canvas:
+            x = canvas.XtoPixel(x)
+        else:
+            x = int(round(x * styles.canvas_width))
 
-    # determine x and y position
-    # the offset always points inwards, depending on the horizontal and vertical alignment
-    if h == "l":
-        x = pad_prop("LeftMargin") + h_offset
-    elif h == "c":
-        x = (1. - pad_prop("RightMargin") + pad_prop("LeftMargin")) / 2. + h_offset
-    else:  # "r":
-        x = 1. - pad_prop("RightMargin") - h_offset
+    return x
 
-    if v == "t":
-        y = 1. - pad_prop("TopMargin") - v_offset
-    elif v == "c":
-        y = (1. - pad_prop("TopMargin") + pad_prop("BottomMargin")) / 2. + v_offset
-    else:  # "b"
-        y = pad_prop("BottomMargin") + v_offset
 
+def get_y(y, canvas=None, anchor="bottom", offset=0, margins=True, pixel=False):
+    # check arguments
+    if anchor.lower() not in ["bottom", "b", "top", "t"]:
+        raise Exception("anchor must be 'bottom', 'b', 'top' or 't'")
+    ttb = anchor.lower() in ["top", "t"]
+
+    # convert pixel to relative coordinate
+    if isinstance(y, six.integer_types):
+        if canvas:
+            y = pixel_to_coord(canvas, y=y)
+        else:
+            y /= float(styles.canvas_height)
+
+    # add the offset
+    if offset:
+        if isinstance(offset, six.integer_types):
+            if canvas:
+                offset = pixel_to_coord(canvas, y=offset)
+            else:
+                offset /= float(styles.canvas_height)
+        y += offset
+
+    # flip when anchor is top
+    if ttb:
+        y = 1. - y
+
+    # include margins
+    if margins:
+        if canvas:
+            # recursively add parent canvas margins
+            m = 0.
+            obj = canvas
+            while True:
+                m += obj.GetTopMargin() if ttb else obj.GetBottomMargin()
+                parent = obj.GetCanvas()
+                if parent != obj:
+                    obj = parent
+                else:
+                    break
+            # add parent margins
+        else:
+            # consider pad margins
+            m = getattr(styles.pad, "TopMargin" if ttb else "BottomMargin", 0.)
+        y = (y - m) if ttb else (y + m)
+
+    # convert to pixels
+    if pixel:
+        if canvas:
+            y = canvas.YtoPixel(y)
+        else:
+            y = int(round(y * styles.canvas_height))
+
+    return y
+
+
+def get_xy(x, y, canvas=None, x_anchor="left", y_anchor="bottom", x_offset=0, y_offset=0, **kwargs):
+    x = get_x(x, canvas=canvas, anchor=x_anchor, offset=x_offset, **kwargs)
+    y = get_y(y, canvas=canvas, anchor=y_anchor, offset=y_offset, **kwargs)
     return x, y
 
 
@@ -385,6 +391,57 @@ def get_stable_distance(mode, distance, current=None, reference=None):
         f = float(width) / float(ref_width)
 
     return distance * f
+
+
+def calculate_legend_coords(pad=None, x1=None, x2=None, width=None, y1=None, y2=None, height=None,
+        dy=None, n=1):
+    # try to forward to old signature
+    if isinstance(pad, int):
+        return calculate_legend_coords_old(pad, x1=x1, x2=x2, y2=y2, dy=dy)
+
+    # horizontal positioning, prefer coordinates over width
+    if x2 is None:
+        if width is not None and x1 is not None:
+            x2 = get_x(x1, pad) + get_x(width, pad, margins=False)
+        else:
+            x2 = get_x(10, pad, "right")
+    if x1 is None:
+        if width is not None:
+            x1 = x2 - get_x(width, pad, margins=False)
+        else:
+            x1 = get_x(0.25, pad, "right")
+
+    # vertical positioning, prefer coordinates over height over n * dy
+    if y2 is None:
+        if height is not None and y1 is not None:
+            y2 = get_y(y1, pad) + get_y(height, pad, margins=False)
+        elif dy is not None and y1 is not None:
+            y2 = get_y(y1, pad) + n * get_y(dy, pad, margins=False)
+        else:
+            y2 = get_y(10, pad, anchor="top")
+    if y1 is None:
+        if height is not None and y2 is not None:
+            y1 = y2 - get_y(height, pad, margins=False)
+        elif dy is not None and y2 is not None:
+            y1 = y2 - n * get_y(dy, pad, margins=False)
+        else:
+            y1 = y2 - n * get_y(styles.legend_dy, pad, margins=False)
+
+    return (x1, y1, x2, y2)
+
+
+def calculate_legend_coords_old(n_entries, x1=None, x2=None, y2=None, dy=None):
+    warnings.warn("the signature calculate_legend_coords_old(n_entries, **kwargs) is deprecated",
+        DeprecationWarning)
+
+    x1 = x1 if x1 is not None else styles.legend_x1
+    x2 = x2 if x2 is not None else styles.legend_x2
+    y2 = y2 if y2 is not None else styles.legend_y2
+    dy = dy if dy is not None else styles.legend_dy
+
+    y1 = y2 - dy * n_entries
+
+    return (x1, y1, x2, y2)
 
 
 def fill_legend(legend, entries):
