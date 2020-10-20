@@ -7,7 +7,7 @@ Pre-configured ROOT plotting routines that create and return objects.
 
 __all__ = [
     "create_object", "create_canvas", "create_legend", "create_top_left_label",
-    "create_top_right_label", "create_cms_labels",
+    "create_top_right_label", "create_cms_labels", "draw_objects",
 ]
 
 
@@ -88,7 +88,7 @@ def create_top_right_label(text, x=None, y=None, pad=None, props=None, **kwargs)
     # default position
     kwargs.setdefault("x_anchor", "right")
     kwargs.setdefault("y_anchor", "top")
-    x_default, y_default = get_xy(-10, -10, pad, **kwargs)
+    x_default, y_default = get_xy(-10, -6, pad, **kwargs)
     if x is None:
         x = x_default
     if y is None:
@@ -108,7 +108,7 @@ def create_cms_labels(prefix="CMS", postfix="Preliminary", x=None, y=None, pad=N
     # default position
     kwargs.setdefault("x_anchor", "left")
     kwargs.setdefault("y_anchor", "top")
-    x_default, y_default = get_xy(10, -10, pad, **kwargs)
+    x_default, y_default = get_xy(10, -6, pad, **kwargs)
     if x is None:
         x = x_default
     if y is None:
@@ -121,3 +121,11 @@ def create_cms_labels(prefix="CMS", postfix="Preliminary", x=None, y=None, pad=N
     setup_latex(label2, {"TextFont": 53})
 
     return [label1, label2]
+
+
+def draw_objects(objs):
+    for obj in objs:
+        if isinstance(obj, tuple) and len(obj) == 2:
+            obj[0].Draw(obj[1])
+        else:
+            obj.Draw()
