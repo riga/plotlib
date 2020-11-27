@@ -399,6 +399,16 @@ def calculate_legend_coords(pad=None, x1=None, x2=None, width=None, y1=None, y2=
     if isinstance(pad, int):
         return calculate_legend_coords_old(pad, x1=x1, x2=x2, y2=y2, dy=dy)
 
+    # when given, convert coordinates relative to pad
+    if x1 is not None:
+        x1 = get_x(abs(x1), pad, anchor="left" if x1 >= 0 else "right")
+    if x2 is not None:
+        x2 = get_x(abs(x2), pad, anchor="left" if x2 >= 0 else "right")
+    if y1 is not None:
+        y1 = get_y(abs(y1), pad, anchor="bottom" if y1 >= 0 else "top")
+    if y2 is not None:
+        y2 = get_y(abs(y2), pad, anchor="bottom" if y2 >= 0 else "top")
+
     # horizontal positioning, prefer coordinates over width
     if x2 is None:
         if width is not None and x1 is not None:
