@@ -9,7 +9,7 @@ __all__ = [
     "apply_properties", "get_canvas_pads", "update_canvas", "setup_style", "setup_canvas",
     "setup_pad", "setup_x_axis", "setup_y_axis", "setup_z_axis", "setup_axes", "setup_latex",
     "setup_legend", "setup_hist", "setup_graph", "setup_line", "setup_func", "setup_box",
-    "setup_ellipse", "pixel_to_coord", "get_x", "get_y", "get_stable_distance",
+    "setup_ellipse", "pixel_to_coord", "get_xy", "get_x", "get_y", "get_stable_distance",
     "calculate_legend_coords", "fill_legend", "set_hist_value", "add_hist_value",
     "show_hist_underflow", "show_hist_overflow",
 ]
