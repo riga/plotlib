@@ -141,6 +141,7 @@ style.graph = DotDict(
     LineColor=1,
     LineWidth=2,
     FillColor=0,
+    FillStyle=1001,
     MarkerStyle=10,
     MarkerColor=1,
 )
