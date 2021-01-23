@@ -395,31 +395,31 @@ def get_stable_distance(mode, distance, current=None, reference=None):
 
 def calculate_legend_coords(pad=None, x1=None, x2=None, width=None, y1=None, y2=None, height=None,
         dy=None, n=1):
-    # try to forward to old signature
-    if isinstance(pad, int):
-        return calculate_legend_coords_old(pad, x1=x1, x2=x2, y2=y2, dy=dy)
+    # helpers to sanitize user coordinates, optionally relative to pad
+    x_ = lambda x: get_x(abs(x), pad, anchor="left" if x >= 0 else "right")
+    y_ = lambda y: get_y(abs(y), pad, anchor="bottom" if y >= 0 else "top")
 
     # when given, convert coordinates relative to pad
     if x1 is not None:
-        x1 = get_x(abs(x1), pad, anchor="left" if x1 >= 0 else "right")
+        x1 = x_(x1)
     if x2 is not None:
-        x2 = get_x(abs(x2), pad, anchor="left" if x2 >= 0 else "right")
+        x2 = x_(x2)
     if y1 is not None:
-        y1 = get_y(abs(y1), pad, anchor="bottom" if y1 >= 0 else "top")
+        y1 = y_(y1)
     if y2 is not None:
-        y2 = get_y(abs(y2), pad, anchor="bottom" if y2 >= 0 else "top")
+        y2 = y_(y2)
 
     # horizontal positioning, prefer coordinates over width
     if x2 is None:
         if width is not None and x1 is not None:
             x2 = get_x(x1, pad) + get_x(width, pad, margins=False)
         else:
-            x2 = get_x(10, pad, "right")
+            x2 = x_(styles.legend_x2)
     if x1 is None:
         if width is not None:
             x1 = x2 - get_x(width, pad, margins=False)
         else:
-            x1 = get_x(0.25, pad, "right")
+            x1 = x_(styles.legend_x1)
 
     # vertical positioning, prefer coordinates over height over n * dy
     if y2 is None:
@@ -428,7 +428,7 @@ def calculate_legend_coords(pad=None, x1=None, x2=None, width=None, y1=None, y2=
         elif dy is not None and y1 is not None:
             y2 = get_y(y1, pad) + n * get_y(dy, pad, margins=False)
         else:
-            y2 = get_y(10, pad, anchor="top")
+            y2 = y_(styles.legend_y2)
     if y1 is None:
         if height is not None and y2 is not None:
             y1 = y2 - get_y(height, pad, margins=False)
@@ -440,21 +440,7 @@ def calculate_legend_coords(pad=None, x1=None, x2=None, width=None, y1=None, y2=
     return (x1, y1, x2, y2)
 
 
-def calculate_legend_coords_old(n_entries, x1=None, x2=None, y2=None, dy=None):
-    warnings.warn("the signature calculate_legend_coords_old(n_entries, **kwargs) is deprecated",
-        DeprecationWarning)
-
-    x1 = x1 if x1 is not None else styles.legend_x1
-    x2 = x2 if x2 is not None else styles.legend_x2
-    y2 = y2 if y2 is not None else styles.legend_y2
-    dy = dy if dy is not None else styles.legend_dy
-
-    y1 = y2 - dy * n_entries
-
-    return (x1, y1, x2, y2)
-
-
-def fill_legend(legend, entries):
+def fill_legend(legend, entries, transposed=True):
     """
     Fills *entries* into a TLegend *legend* with multiple columns in an intuitive fashion. ROOT's
     own implementation fills rows first while this implementation fills columns first. *entries*
@@ -492,14 +478,18 @@ def fill_legend(legend, entries):
         entry[1] += " " * int(math.floor((max_width - width) / float(space_width)))
     empty_label = " " * int(math.floor(max_width / float(space_width)))
 
-    # loop in a "transposed" order
-    for i in range(n_rows):
-        for j in range(n_cols):
-            idx = i + n_rows * j
-            if idx < n:
-                entry = entries[idx]
-            else:
-                entry = (entries[n - 1][0], empty_label, "")
+    # add entries in normal or transposed order
+    if transposed:
+        for i in range(n_rows):
+            for j in range(n_cols):
+                idx = i + n_rows * j
+                if idx < n:
+                    entry = entries[idx]
+                else:
+                    entry = (entries[n - 1][0], empty_label, "")
+                legend.AddEntry(*entry)
+    else:
+        for entry in entries:
             legend.AddEntry(*entry)
 
 
