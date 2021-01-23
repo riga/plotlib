@@ -16,7 +16,6 @@ __all__ = [
 
 
 import math
-import warnings
 
 import ROOT
 import six
