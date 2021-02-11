@@ -6,7 +6,7 @@ Pre-configured ROOT plotting routines that create and return objects.
 
 
 __all__ = [
-    "create_object", "create_canvas", "create_legend", "create_top_left_label",
+    "create_object", "create_canvas", "create_legend", "create_legend_box", "create_top_left_label",
     "create_top_right_label", "create_cms_labels", "draw_objects",
 ]
 
@@ -15,7 +15,7 @@ import ROOT
 
 from plotlib.root.styles import styles
 from plotlib.root.tools import (
-    get_canvas_pads, setup_canvas, setup_pad, setup_latex, setup_legend, get_xy,
+    get_canvas_pads, setup_canvas, setup_pad, setup_latex, setup_legend, setup_box, get_xy,
     calculate_legend_coords,
 )
 from plotlib.util import merge_dicts, create_random_name
@@ -62,6 +62,35 @@ def create_legend(*args, **kwargs):
     setup_legend(legend, props=props)
 
     return legend
+
+
+def create_legend_box(legend, pad, mode="", x1=None, x2=None, y1=None, y2=None, padding=0,
+        x_padding=None, x1_padding=None, x2_padding=None, y_padding=None, y1_padding=None,
+        y2_padding=None, props=None):
+    # determine the padding
+    if x1_padding is None:
+        x1_padding = padding if x_padding is None else x_padding
+    if x2_padding is None:
+        x2_padding = padding if x_padding is None else x_padding
+    if y1_padding is None:
+        y1_padding = padding if y_padding is None else y_padding
+    if y2_padding is None:
+        y2_padding = padding if y_padding is None else y_padding
+
+    if x1 is None:
+        x1 = pad.GetLeftMargin() if "l" in mode else (legend.GetX1() - x1_padding)
+    if x2 is None:
+        x2 = (1 - pad.GetRightMargin()) if "r" in mode else (legend.GetX2() + x2_padding)
+    if y1 is None:
+        y1 = pad.GetBottomMargin() if "b" in mode else (legend.GetY1() - y1_padding)
+    if y2 is None:
+        y2 = (1 - pad.GetTopMargin()) if "t" in mode else (legend.GetY2() + y2_padding)
+
+    # create the box
+    box = create_object("TPave", x1, y1, x2, y2, 0, "NDC")
+    setup_box(box, props=props)
+
+    return box
 
 
 def create_top_left_label(text, x=None, y=None, pad=None, props=None, **kwargs):
