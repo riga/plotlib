@@ -154,7 +154,9 @@ def create_cms_labels(prefix="CMS", postfix="Preliminary", x=None, y=None, pad=N
 
 def draw_objects(objs):
     for obj in objs:
-        if isinstance(obj, tuple) and len(obj) == 2:
+        if getattr(obj, "Draw", None) is None and callable(obj):
+            obj()
+        elif isinstance(obj, tuple) and len(obj) == 2:
             obj[0].Draw(obj[1])
         else:
             obj.Draw()
