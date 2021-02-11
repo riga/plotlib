@@ -33,8 +33,7 @@ r.setup_axes(h1, pad)
 
 # create the legend, create the coordiations via the number of entries
 # and the vertical distance between them
-legend = ROOT.TLegend(*r.calculate_legend_coords(2, dy=0.075))
-r.setup_legend(legend)
+legend = r.routines.create_legend(pad=pad, width=250, n=2)
 legend.AddEntry(h1, "Histogram 1")
 legend.AddEntry(h2, "Histogram 2")
 
