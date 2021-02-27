@@ -77,6 +77,12 @@ def create_legend_box(legend, pad, mode="", x1=None, x2=None, y1=None, y2=None, 
     if y2_padding is None:
         y2_padding = padding if y_padding is None else y_padding
 
+    # convert paddings from pixel (>=1) to NDC values
+    x1_padding = pad.PixeltoX(x1_padding) if abs(x1_padding) >= 1 else x1_padding
+    x2_padding = pad.PixeltoX(x2_padding) if abs(x2_padding) >= 1 else x2_padding
+    y1_padding = pad.PixeltoY(y1_padding) if abs(y1_padding) >= 1 else y1_padding
+    y2_padding = pad.PixeltoY(y2_padding) if abs(y2_padding) >= 1 else y2_padding
+
     if x1 is None:
         x1 = pad.GetLeftMargin() if "l" in mode else (legend.GetX1() - x1_padding)
     if x2 is None:
