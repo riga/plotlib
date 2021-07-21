@@ -139,21 +139,42 @@ def create_top_right_label(text, x=None, y=None, pad=None, props=None, **kwargs)
     return label
 
 
-def create_cms_labels(prefix="CMS", postfix="Preliminary", x=None, y=None, pad=None, **kwargs):
+def create_cms_labels(cms="CMS", postfix="Preliminary", layout="inside_vertical", x=None, y=None,
+        pad=None, text_size=28, text_size_postfix=None, **kwargs):
+    # check the layout
+    layouts = ["inside_vertical", "inside_horizontal", "outside_horizontal"]
+    if layout not in layouts:
+        raise ValueError("unknown layout '{}', must be one of {}".format(layout, ",".join(layouts)))
+    is_inside = layout.startswith("inside")
+    is_horizontal = layout.endswith("horizontal")
+
     # default position
     kwargs.setdefault("x_anchor", "left")
     kwargs.setdefault("y_anchor", "top")
-    x_default, y_default = get_xy(2, -6, pad, **kwargs)
+    x_offset = 24 if is_inside else 2
+    y_offset = 26 if is_inside else -6
+    x_default, y_default = get_xy(x_offset, y_offset, pad, **kwargs)
     if x is None:
         x = x_default
     if y is None:
         y = y_default
 
+    # label properties
+    props1 = {"TextFont": 63, "TextSize": text_size or styles.text_size}
+    props2 = {"TextFont": 53, "TextSize": text_size_postfix or styles.text_size}
+    props1["TextAlign"] = 13 if is_inside else 11
+    props2["TextAlign"] = props1["TextAlign"]
+    text_scale = props1["TextSize"] / float(props2["TextSize"])
+
     # create the labels
-    label1 = create_object("TLatex", x, y, prefix)
-    label2 = create_object("TLatex", x, y, "#font[63]{{{}}} {}".format(prefix, postfix))
-    setup_latex(label1, {"TextFont": 63})
-    setup_latex(label2, {"TextFont": 53})
+    if is_horizontal:
+        tmpl2 = "#font[63]{{#scale[{:.3f}]{{{}}}}} {}"
+    else:
+        tmpl2 = "#splitline{{#scale[{:.3f}]{{#font[63]{{{}}}}}}}{{{}}}"
+    label1 = create_object("TLatex", x, y, cms)
+    label2 = create_object("TLatex", x, y, tmpl2.format(text_scale, cms, postfix))
+    setup_latex(label1, props1)
+    setup_latex(label2, props2)
 
     return [label1, label2]
 
